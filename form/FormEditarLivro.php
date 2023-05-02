@@ -18,11 +18,16 @@ $editora = $livro->getEditora ();
 <title>Editar Livro</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- Select2 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
 <body>
 		<br>
-	<h1 align="center">Alterar de Livro</h1>
+	<h1 align="center">Alterar o Livro</h1>
 	<br>
 	<div class="container d-flex justify-content-center">
 	<form class="row gy-2 gx-3 align-items-center" method="POST" action="../dados/AtualizarLivro.php" id="formEditarLivro">
@@ -77,7 +82,7 @@ $editora = $livro->getEditora ();
 			<div class="row g-3">
 				<label for="divAutores">Autor</label>
 				<div class="input-group-text">
-					<select id="autor" name="autor" class="form-control form-select">
+					<select id="autor" name="autor" class="select2" multiple>
 						<?php
 						foreach($listaAutores as $autor){
 							$selected = "";
@@ -90,10 +95,21 @@ $editora = $livro->getEditora ();
 						  <option value="<?php echo $autor->getCodigo(); ?>" <?php echo $selected;?>><?php echo $autor->getNome();?></option>
 						  <?php } ?>
 					</select>
-  					<button style="float: left" type="button" class="btn btn-outline-secondary" onclick="javascript:adicionarAutor()">Add</button>
+  					<button id="addautor" style="float: left" type="button" class="btn btn-outline-secondary">Add</button>
 				</div>
 			</div>
-			
+
+			<table id="tabelaAutores">
+				<thead>
+					<tr>
+						<th>Editar</th>
+						<th>Ações</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+
 			<div class="container bg-light">
         			<div class="col-md-12 text-center">
 					<input type="submit" value="Salvar" class="btn btn-primary">
@@ -106,3 +122,58 @@ $editora = $livro->getEditora ();
 </body>
 
 </html>
+
+
+<script>
+
+  //// Adicionar na lista ////
+
+  $('.select2').select2();
+
+  $('#addautor').click(function() {
+  // Obter os valores selecionados do Select2
+  var selectedValues = $('.select2').val();
+
+  // Adicionar cada valor selecionado à tabela HTML
+  $.each(selectedValues, function(index, value) {
+    $('#tabelaAutores tbody').append('<tr><td>' + value + '</td><td><a class="btn-delete" data-id="'+value+'">Excluir</a></td></tr>');
+  });
+
+  // Limpar o Select2 após a seleção
+  $('.select2').val(null).trigger('change');
+
+  // Enviar os valores selecionados para o servidor usando AJAX
+  $.ajax({
+    type: 'POST',
+    data: { values: selectedValues },
+    success: function(data) {
+      console.log('Valores enviados com sucesso!');
+    },
+    error: function() {
+      console.log('Erro ao enviar valores!');
+    }
+  });
+});
+
+
+//// Remover da lista ////
+
+$('#tabelaAutores').on('click', '.btn-delete', function() {
+  var row = $(this).closest('tr');
+  var id = $(this).data('id');
+
+  // Enviar o ID para o servidor usando AJAX
+  $.ajax({
+    type: 'POST',
+    data: { id: id },
+    success: function() {
+      // Remover a linha da tabela HTML
+      row.remove();
+    },
+    error: function() {
+      console.log('Erro ao remover linha!');
+    }
+  });
+});
+
+</script>
